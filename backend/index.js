@@ -1,8 +1,10 @@
-import http from "http";
 import { ApolloServer } from "@apollo/server";
-import cors from "cors"
+import cors from "cors";
 import express from "express";
+import http from "http";
 
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
 import mergedResolvers from "./resolver/index.js";
 import mergedTypeDefs from "./typeDefs/index.js";
 
@@ -21,18 +23,16 @@ await server.start();
 // Set up our Express middleware to handle CORS, body parsing,
 // and our expressMiddleware function.
 app.use(
-  '/',
-  cors<cors.CorsRequest>(),
+  "/",
+  cors(),
   express.json(),
   // expressMiddleware accepts the same arguments:
   // an Apollo Server instance and optional configuration options
   expressMiddleware(server, {
-    context: async ({ req }) => ({ token: req.headers.token }),
-  }),
+    context: async ({ req }) => ({ req }),
+  })
 );
 
 // Modified server startup
-await new Promise<void>((resolve) =>
-  httpServer.listen({ port: 4000 }, resolve),
-);
-console.log(`🚀 Server ready at http://localhost:4000/`);
+await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
+console.log("🚀 Server ready at http://localhost:4000/");
